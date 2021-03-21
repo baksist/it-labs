@@ -10,18 +10,27 @@ namespace it_lab_4_8
     {
         public static double Sum(string input)
         {
+            var n = 2;
             var eps = Convert.ToDouble(input);
             double sum = 0;
-            var n = 2;
-            double term;
+            double prv_term, cur_term;
+
+            cur_term = SumTerm(n);
+            sum += cur_term;
+            n++;
             do
             {
-                term = (double)(n - 1) / (double)(2 * Factorial(n) - 2);
-                Console.WriteLine(term);
-                sum += term;
+                prv_term = cur_term;
+                cur_term = SumTerm(n);
+                sum += cur_term;
                 n++;
-            } while (term > eps);
+            } while (Math.Abs(cur_term - prv_term) > eps);
             return sum;
+        }
+
+        private static double SumTerm(int i)
+        {
+            return (double)(i - 1) / (double)(2 * Factorial(i) - 2);
         }
 
         public static double Product(string input)
