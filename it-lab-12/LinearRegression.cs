@@ -35,7 +35,28 @@ namespace it_lab_12
             return s;
         }
 
-        public static Tuple<double, double> FirstOrderPolynomial()
+        public static List<double> GetPolynomial(int order)
+        {            
+            var s = new double[order + 1, order + 1];
+            for (var i = 0; i < s.GetLength(0); i++)
+                for (var j = 0; j < s.GetLength(1); j++)                
+                    s[i, j] = CalculateS(i + j);
+            
+            var b = new double[order + 1];
+            for (var i = 0; i < b.Length; i++)
+                b[i] = CalculateB(i);
+
+            var system = Matrix<double>.Build.DenseOfArray(s);
+            var vect = Vector<double>.Build.Dense(b);
+            var a = system.Solve(vect).ToList();
+
+            for (var i = 0; i < a.Count; i++)
+                a[i] = Math.Round(a[i], 3);
+
+            return a;
+        }
+
+       /* public static Tuple<double, double> FirstOrderPolynomial()
         {
             var s_0 = CalculateS(0);
             var s_1 = CalculateS(1);
@@ -82,6 +103,6 @@ namespace it_lab_12
             var result = new List<double>(a);
 
             return result;
-        }
+        }*/
     }
 }
