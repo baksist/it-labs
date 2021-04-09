@@ -23,37 +23,28 @@ namespace it_lab_12
         private void button3_Click(object sender, EventArgs e)
         {
             points.Clear();
-            for(var i = 0; i < dataGridView1.RowCount - 1; i++)
+
+            foreach(DataGridViewRow row in dataGridView1.Rows)
             {
-                var x = Convert.ToDouble(dataGridView1.Rows[i].Cells[0].Value);
-                var y = Convert.ToDouble(dataGridView1.Rows[i].Cells[1].Value);
+                if (row.Cells[0].Value == null || String.IsNullOrWhiteSpace(row.Cells[0].Value.ToString()) || 
+                    row.Cells[1].Value == null || String.IsNullOrWhiteSpace(row.Cells[1].Value.ToString()))
+                    continue;
+                var x = Convert.ToDouble(row.Cells[0].Value);
+                var y = Convert.ToDouble(row.Cells[1].Value);
                 points.Add(new Tuple<double, double>(x, y));
             }
 
-           /* points = points.OrderByDescending(x => x.Item1).ToList();
-            chart1.ChartAreas[0].AxisX.Maximum = points[0].Item1;
-            chart1.ChartAreas[0].AxisX.Minimum = points.Last().Item2;
-            chart1.ChartAreas[0].AxisX.MajorGrid.Interval = (points[0].Item1 - points.Last().Item1) / points.Count;
-
-            chart1.Series.Add(new System.Windows.Forms.DataVisualization.Charting.Series() { Name = "points", BorderWidth = 1, ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline});
-            chart1.Series[0].Points.DataBindXY(points.Select(x => x.Item1).ToArray(), points.Select(x => x.Item2).ToArray());*/
+            Console.WriteLine(LinearRegression.GetPrecisePolynomial(1));
         }
 
         private void button1_Click(object sender, EventArgs e)
-        {
-            /*var a = LinearRegression.FirstOrderPolynomial();
-            var a_0 = Math.Round(a.Item1, 3);
-            var a_1 = Math.Round(a.Item2, 3);*/
+        {            
             var a = LinearRegression.GetPolynomial(1);
             MessageBox.Show($"{a[0]}+{a[1]}x", "Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            /*var a = LinearRegression.SecondOrderPolynomial();
-            var a_0 = Math.Round(a[0], 3);
-            var a_1 = Math.Round(a[1], 3);
-            var a_2 = Math.Round(a[2], 3);*/
             var a = LinearRegression.GetPolynomial(2);
             MessageBox.Show($"{a[0]}+{a[1]}x+{a[2]}x^2", "Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -76,6 +67,19 @@ namespace it_lab_12
             dataGridView1.Rows[3].Cells[1].Value = 6.0;
             dataGridView1.Rows[4].Cells[1].Value = 4.0;
             dataGridView1.Rows[5].Cells[1].Value = 3.0;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            var order = LinearRegression.GetPrecisePolynomial(1);
+            var a = LinearRegression.GetPolynomial(order);
+            var res = "";
+            for (var i = 0; i < a.Count; i++)
+            {
+                res += $"{a[i]} * x^{i} + ";
+            }
+            MessageBox.Show($"{res}", "Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
         }
     }
 }

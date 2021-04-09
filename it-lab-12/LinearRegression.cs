@@ -11,28 +11,28 @@ namespace it_lab_12
     {
         private static double CalculateS(int m)
         {
-            double s = 0;
+            double sum = 0;
             for (var i = 0; i < Form1.points.Count; i++)
             {
                 if (Form1.points[i].Item1 == 0 && m == 0)
-                    s += 1;
+                    sum += 1;
                 else
-                    s += Math.Pow(Form1.points[i].Item1, m);
+                    sum += Math.Pow(Form1.points[i].Item1, m);
             }
-            return s;
+            return sum;
         }
 
         private static double CalculateB(int m)
         {
-            double s = 0;
+            double sum = 0;
             for (var i = 0; i < Form1.points.Count; i++)
             {
                 if (Form1.points[i].Item1 == 0 && m == 0)
-                    s += Form1.points[i].Item2;
+                    sum += Form1.points[i].Item2;
                 else
-                    s += Math.Pow(Form1.points[i].Item1, m) * Form1.points[i].Item2;
+                    sum += Math.Pow(Form1.points[i].Item1, m) * Form1.points[i].Item2;
             }
-            return s;
+            return sum;
         }
 
         public static List<double> GetPolynomial(int order)
@@ -54,6 +54,31 @@ namespace it_lab_12
                 a[i] = Math.Round(a[i], 3);
 
             return a;
+        }
+
+        public static int GetPrecisePolynomial(int order)
+        {
+            var current_prec = CalculatePrecision(order);
+            if (current_prec < CalculatePrecision(order + 1) && current_prec < CalculatePrecision(order + 2))
+                return order;
+            else
+                return GetPrecisePolynomial(order + 1);
+        }
+
+        private static double CalculatePrecision(int order)
+        {
+            var a = GetPolynomial(order);
+            double e = 0;
+            for (var i = 0; i < Form1.points.Count; i++)
+            {
+                double p = 0;
+                for (var j = 0; j < a.Count; j++)                
+                    p += a[j] * Math.Pow(Form1.points[i].Item1, j);
+
+                e += Math.Pow((Form1.points[i].Item2 - p), 2);
+            }
+
+            return e;
         }
 
        /* public static Tuple<double, double> FirstOrderPolynomial()
