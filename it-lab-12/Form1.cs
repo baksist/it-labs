@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -18,79 +15,85 @@ namespace it_lab_12
         public Form1()
         {      
             InitializeComponent();
-            fillTable();
+            //fillTable();   // uncomment for automatic table fill (variant 1)
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void resultButton_click(object sender, EventArgs e)
         {
-            points.Clear();
-
-            foreach(DataGridViewRow row in dataGridView1.Rows)
+            if (dataGridView1.RowCount >= 6)
             {
-                if (row.Cells[0].Value == null || String.IsNullOrWhiteSpace(row.Cells[0].Value.ToString()) || 
-                    row.Cells[1].Value == null || String.IsNullOrWhiteSpace(row.Cells[1].Value.ToString()))
-                    continue;
-                var x = Convert.ToDouble(row.Cells[0].Value);
-                var y = Convert.ToDouble(row.Cells[1].Value);
-                points.Add(new Tuple<double, double>(x, y));
+                CopyPointsToList();
+                CreateChart();
+                FillTextBox();
             }
-
-            button1.Enabled = true;
-            button2.Enabled = true;
-            button4.Enabled = true;
-            button5.Enabled = true;
+            else            
+                MessageBox.Show("Please provide at least six value pairs",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);                      
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {            
-            var a = LinearRegression.GetPolynomial(1);
-            MessageBox.Show($"{a[0]}+{a[1]}x", "Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void button2_Click(object sender, EventArgs e)
+        private void FillTextBox()
         {
-            var a = LinearRegression.GetPolynomial(2);
-            MessageBox.Show($"{a[0]}+{a[1]}x+{a[2]}x^2", "Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            textBox1.Clear();
+
+            textBox1.Text += $"P_1(x) = {LinearRegression.BeautifyPolynomial(1)}";
+            textBox1.Text += Environment.NewLine;
+
+            textBox1.Text += $"P_2(x) = {LinearRegression.BeautifyPolynomial(2)}";
+            textBox1.Text += Environment.NewLine;
+
+            var prec = LinearRegression.GetPrecisePolynomial(1);
+            textBox1.Text += $"P_{prec}(x) = {LinearRegression.BeautifyPolynomial(prec)}";
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void CopyPointsToList()
         {
-            var order = LinearRegression.GetPrecisePolynomial(1);
-            var a = LinearRegression.GetPolynomial(order);
-            var res = "";
-            for (var i = 0; i < a.Count; i++)
+            if (points.Count > 0)
+                points.Clear();
+
+            for (var i = 0; i < dataGridView1.RowCount; i++)
             {
-                res += $"{a[i]} * x^{i} + ";
+                try
+                {
+                    if (ValidateCell(i, 0) && ValidateCell(i, 1))
+                    {
+                        var x = Convert.ToDouble(dataGridView1.Rows[i].Cells[0].Value);
+                        var y = Convert.ToDouble(dataGridView1.Rows[i].Cells[1].Value);
+                        points.Add(new Tuple<double, double>(x, y));
+                    }
+                    else if (!ValidateCell(i, 0) && !ValidateCell(i, 1) && dataGridView1.RowCount != 1)
+                        continue;
+                    else
+                    {
+                        MessageBox.Show("There are invalid cells in the table. Please enter again.",
+                            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        points.Clear();
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("There are invalid cells in the table. Please enter again.", 
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    points.Clear();
+                    break;
+                }
             }
-            MessageBox.Show($"{res}", "Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
         }
 
-        private void fillTable()
+        private bool ValidateCell(int i, int j)
         {
-            dataGridView1.RowCount = 6;
-            dataGridView1.ColumnCount = 2;
-
-            dataGridView1.Rows[0].Cells[0].Value = 0.0;
-            dataGridView1.Rows[1].Cells[0].Value = 0.2;
-            dataGridView1.Rows[2].Cells[0].Value = 0.4;
-            dataGridView1.Rows[3].Cells[0].Value = 0.6;
-            dataGridView1.Rows[4].Cells[0].Value = 0.8;
-            dataGridView1.Rows[5].Cells[0].Value = 1.0;
-
-            dataGridView1.Rows[0].Cells[1].Value = 3.0;
-            dataGridView1.Rows[1].Cells[1].Value = 6.0;
-            dataGridView1.Rows[2].Cells[1].Value = 3.0;
-            dataGridView1.Rows[3].Cells[1].Value = 6.0;
-            dataGridView1.Rows[4].Cells[1].Value = 4.0;
-            dataGridView1.Rows[5].Cells[1].Value = 3.0;
+            var cell = dataGridView1.Rows[i].Cells[j].Value;
+            if (cell == null || String.IsNullOrWhiteSpace(cell.ToString()))
+                return false;
+            else
+                return true;
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        private void CreateChart()
         {
             double[] x = points.Select(_ => _.Item1).ToArray();
             double[] y = points.Select(_ => _.Item2).ToArray();
-           
+
             double Xmin = x.Min();
             double Xmax = x.Max();
             double Ymin = y.Min();
@@ -120,28 +123,28 @@ namespace it_lab_12
             series_0.ChartArea = "myGraph";
             series_0.ChartType = SeriesChartType.Point;
             series_0.MarkerSize = 10;
-            series_0.LegendText = "p(x)_0";
+            series_0.LegendText = "P(x)_0";
             chart1.Series.Add(series_0);
 
             Series series_1 = new Series();
             series_1.ChartArea = "myGraph";
             series_1.ChartType = SeriesChartType.Spline;
             series_1.BorderWidth = 3;
-            series_1.LegendText = "p(x)_1";
+            series_1.LegendText = "P(x)_1";
             chart1.Series.Add(series_1);
 
             Series series_2 = new Series();
             series_2.ChartArea = "myGraph";
             series_2.ChartType = SeriesChartType.Spline;
             series_2.BorderWidth = 3;
-            series_2.LegendText = "p(x)_2";
+            series_2.LegendText = "P(x)_2";
             chart1.Series.Add(series_2);
 
             Series series_p = new Series();
             series_p.ChartArea = "myGraph";
             series_p.ChartType = SeriesChartType.Spline;
             series_p.BorderWidth = 3;
-            series_p.LegendText = "p(x)_precise";
+            series_p.LegendText = "P(x)_precise";
             chart1.Series.Add(series_p);
 
             Legend legend = new Legend();
@@ -152,13 +155,24 @@ namespace it_lab_12
             chart1.Series[2].Points.DataBindXY(x, y_2);
             chart1.Series[3].Points.DataBindXY(x, y_p);
         }
-
-        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        private void fillTable()
         {
-            button1.Enabled = false;
-            button2.Enabled = false;
-            button4.Enabled = false;
-            button5.Enabled = false;
+            dataGridView1.RowCount = 6;
+            dataGridView1.ColumnCount = 2;
+
+            dataGridView1.Rows[0].Cells[0].Value = 0.0;
+            dataGridView1.Rows[1].Cells[0].Value = 0.2;
+            dataGridView1.Rows[2].Cells[0].Value = 0.4;
+            dataGridView1.Rows[3].Cells[0].Value = 0.6;
+            dataGridView1.Rows[4].Cells[0].Value = 0.8;
+            dataGridView1.Rows[5].Cells[0].Value = 1.0;
+
+            dataGridView1.Rows[0].Cells[1].Value = 3.0;
+            dataGridView1.Rows[1].Cells[1].Value = 6.0;
+            dataGridView1.Rows[2].Cells[1].Value = 3.0;
+            dataGridView1.Rows[3].Cells[1].Value = 6.0;
+            dataGridView1.Rows[4].Cells[1].Value = 4.0;
+            dataGridView1.Rows[5].Cells[1].Value = 3.0;
         }
     }
 }

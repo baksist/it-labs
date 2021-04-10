@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace it_lab_12
@@ -62,7 +60,6 @@ namespace it_lab_12
             double y = 0;
             for (var i = 0; i < a.Count; i++)
                 y += a[i] * Math.Pow(Form1.points[index].Item1, i);
-
             return y;
         }
 
@@ -71,7 +68,6 @@ namespace it_lab_12
             double[] y = new double[Form1.points.Count];
             for (var i = 0; i < y.Length; i++)
                 y[i] = CalculatePolynomial(order, i);
-
             return y;
         }
 
@@ -93,8 +89,21 @@ namespace it_lab_12
                 double p = CalculatePolynomial(order, i);
                 e += Math.Pow((Form1.points[i].Item2 - p), 2);
             }
-
             return e;
+        }
+
+        public static string BeautifyPolynomial(int order)
+        {
+            var a = GetPolynomial(order);
+            string result = $"{a[0]} ";
+            for(var i = 1; i <= order; i++)
+            {
+                if (a[i] >= 0)
+                    result += $"+ {a[i]} x^{i} ";
+                else
+                    result += $"- {a[i] * (-1)} x^{i} ";
+            }
+            return result;
         }
     }
 }
